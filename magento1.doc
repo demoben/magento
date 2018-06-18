@@ -1,0 +1,347 @@
+﻿0.
+- example requirejs: https://github.com/demoben/magento
+
+-  Example  PHP  code  for  Factory  pattern :
+<?php
+    #------------ ĐỊNH NGHĨA CLASS ----------------------#
+    /* Định nghĩa class ShapeFactory sử dụng Factory pattern
+     * The class contains no attributes.
+     * The class contains one method: Create().
+     */
+    abstract class ShapeFactory {
+        // Phương thức static để tạo đối tượng
+        static function Create($type, array $sizes) {
+            // Xác định dạng đối tượng theo tham số nhận vào
+            switch ($type) {
+                case 'rectangle':
+                    return new Rectangle($sizes[0], $sizes[1]);
+                    break;
+                case 'triangle':
+                    return new Triangle($sizes[0], $sizes[1], $sizes[2]);
+                    break;
+            }
+        }
+    }
+
+    /* Định nghĩa lớp trìu tượng Shape
+     * Lớp Shape không có thuộc tính
+     * Lớp Shape có 2 phương thức trìu tượng:
+     * - getArea()
+     * - getPerimeter()
+    */
+    abstract class Shape {
+        abstract protected function getArea();
+        abstract protected function getPerimeter();
+    }
+
+    /* Định nghĩa lớp Triangle
+     * Lớp Triangle có 2 thuộc tính:
+     * - private $_sides (array)
+     * - private $_perimeter (number)
+     * Lớp Triangle có 3 phương thức:
+     * - _ _construct()
+     * - getArea()
+     * - getPerimeter()
+     */
+    class Triangle extends Shape {
+        private $_sides = array();
+        private $_perimeter = NULL;
+        function __construct($s0 = 0, $s1 = 0, $s2 = 0) {
+            $this->_sides[] = $s0;
+            $this->_sides[] = $s1;
+            $this->_sides[] = $s2;
+
+            // Tính toán và thiết lập chu vi hình tam giác
+            $this->_perimeter = array_sum($this->_sides);
+        }
+        // Phương thức tính diện tích hình tam giác từ chu vi và các cạnh
+        public function getArea() {
+            return (SQRT(($this->_perimeter/2) * (($this->_perimeter/2) - $this->_sides[0]) * (($this->_perimeter/2) - $this->_sides[1]) * (($this->_perimeter/2) - $this->_sides[2])));
+        }
+        // Phương thức lấy chu vi hình tam giác
+        public function getPerimeter() {
+            return $this->_perimeter;
+        }
+    }
+
+    /* Định nghĩa class Rectangle
+    * Các thuộc tính của class: width(chiều rộng), height(chiều cao).
+    * Các phương thức của lớp:
+    * - setSize()
+    * - getArea()
+    * - getPerimeter()
+    * - isSquare()
+    */
+    class Rectangle {
+        // Khai báo các thuộc tính
+        public $width = 0;
+        public $height = 0;
+
+        // Hàm khởi tạo
+        function __construct($w = 0, $h = 0) {
+           $this->width = $w;
+           $this->height = $h;
+        }
+
+        // Phương thức này thiết lập các kích thước của hình chữ nhật
+        function setSize($w = 0, $h = 0) {
+            $this->width = $w;
+            $this->height = $h;
+        }
+
+        // Phương thức này tính diện tích hình chữ nhật
+        function getArea() {
+            return ($this->width * $this->height);
+        }
+
+        // Phương thức này tính chu vi hình chữ nhật
+        function getPerimeter() {
+            return ( ($this->width + $this->height) * 2 );
+        }
+
+        // Phương thức này kiểm tra xem hình chữ nhật này có phải là hình vuông
+        function isSquare() {
+            if ($this->width == $this->height) {
+                return true; // Hình chữ nhật
+            } else {
+                return false; // Không phải hình chữ nhật
+            }
+        }
+    }
+    #------------ KẾT THÚC ĐỊNH NGHĨA CLASS ----------------------#
+
+    if (isset($_GET['shape'], $_GET['dimensions'])) {
+        // Tạo ra một đối tượng từ với thông số từ query string
+        $obj = ShapeFactory::Create($_GET['s'], $_GET['d']);
+*
+        echo "<h2>Tạo ra hình {$_GET['shape']}:</h2>";
+        echo '<p>Diện tích hình: ' . $obj->getArea() . '</p>';
+        echo '<p>Chu vi hình: ' . $obj->getPerimeter() . '</p>';
+    } else {
+        echo '<p>Cần cung cấp hình dạng và kích thước!</p>';
+    }
+
+    // Xóa đối tượng
+    unset($obj);
+?>
+
+-
+<?php
+
+// Tạo Subject và Observer
+interface Observer
+{
+	public function update();
+}
+
+interface Subject
+{
+	public function attach(Observer $observer);
+	public function detach(Observer $observer);
+	public function notify();
+}
+
+//Tạo ConcreteSubject implements Subject va đặt tên là Account
+
+class Account implements Subject
+{
+
+	const LOGIN_SUCCESS = 1;
+	const LOGIN_FAILURE = 2;
+    const LOGIN_IVALID = 3;
+    const EXPIRED = 4;
+
+	private $state;
+	private $storage;
+
+    private $data;
+
+	public function __construct()
+	{
+		$this->storage = array();
+		$this->data = array();
+	}
+    // Attach 1 Observer
+	public function attach(Observer $observer)
+	{
+		$isContain = array_search($observer, $this->storage);
+        if ($isContain === false) {
+            $this->storage[] = $observer;
+        }
+	}
+    // Xóa 1 Observer ra khỏi danh sách
+	public function detach(Observer $observer)
+	{
+      foreach($this->storage as $key => $val) {
+        if ($val == $observer) {
+          unset($this->storage[$key]);
+        }
+      }
+    }
+    // Gửi thông báo update tới tất cả các observers trong hệ thống
+    public function notify() {
+	    foreach($this->storage as $observer) {
+	     	$observer->update($this);
+	     }
+    }
+
+    public function login($email, $ip)
+    {
+    	$this->setData([
+    	    'email' => $email,
+    	    'ip' => $ip
+    	]);
+    	if ($email == 'hack@framgia.com' && $ip == '10.0.0.1') {
+    	    $this->setState(Account::LOGIN_INVALID)
+    	} else {
+    	    $login = $this->process($email);
+    	   if ($login) {
+    		    $this->setState(Account::LOGIN_SUCCESS);
+    	    } else {
+			    $this->setState(Account::LOGIN_FAILURE);
+    	    }
+    	}
+
+    	$this->notify();
+    }
+
+    public function save()
+    {
+        $this->notify();
+    }
+
+    public function setState($state)
+    {
+        $this->state = $state;
+    }
+
+    public function getState()
+    {
+        return $this->state;
+    }
+
+    public function process($email)
+    {
+        if ($email == 'thanhsm93@gmail.com') {
+            return true;
+        }
+        return false;
+    }
+
+    public function setData($data)
+    {
+        $this->data = $data;
+    }
+
+    public function getData()
+    {
+        return $this->data;
+    }
+}
+
+// Tạo các ConcreteSubject logger
+class Logger implements Observer
+{
+    public function update(Account $account)
+    {
+        $state = $account->getState();
+        $data = $account->getData()
+        if ($state == Account::LOGIN_SUCCESS) {
+            // thực hiện log thời gian user online blahh..
+            echo  "User {$data['email']} vừa online";
+        }
+    }
+}
+
+// Tạo các ConcreteSubject mailer
+class Mailer implements Observer
+{
+    public function update(Account $account)
+    {
+        $state = $account->getState();
+        $data = $account->getData();
+        if ($state == Account::EXPIRED) {
+            // Gửi email thông tin tài khoản đã hết hạn
+            Email::send($email, "Account hết hạn rồi bạn ei");
+            echo "Account $data['email'] has expired. Email sent!";
+        }
+    }
+}
+
+// Tạo các ConcreteSubject Security
+class Security implements Observer
+{
+    public function update(Account $account)
+    {
+        $state = $account->getState();
+        $data = $account->getData();
+        if ($state == Account::LOGIN_INVALID) {
+            // Block ip
+            echo "Account $data['email'] with ip $data['ip'] are trying to hack our system";
+        }
+    }
+}
+
+$account = new Account();
+//Attach các observer vào subject
+$security = new Security();
+$account->attach(new Logger());
+$account->attach(new Mailer());
+$account->attach($security);
+// Đăng nhập
+$account->login('thanhsm93@gmail.com', '192.168.0.1');
+// Thay đổi state
+$account->setState(Account::EXPIRED);
+$account->save();
+$account->login('hack@framgia.com', '10.0.0.1');
+// Xóa security observer
+$account->detach($security);
+$account->login('hack@framgia.com', '10.0.0.1'); //will success
+
+- test sql index
+  + Database: 100000 record
+  Example 1:
+	1 no index
+	+ SQL: SELECT cat_id from product WHERE cat_id = 15
+	 Showing rows 0 - 24 (929 total, Query took 0.0025 seconds.)
+	2 have index
+	+ SQL: SELECT cat_id from product_index WHERE cat_id = 15
+	  Showing rows 0 - 24 (929 total, Query took 0.0009 seconds.)
+	--------------------------------------------
+	=> tốc độ truy vấn nhanh gấp 2,8 lần so với không có index.
+
+  Example 2:
+	1 no index
+	+ SQL: SELECT * from product WHERE cat_id = 15
+	 Showing rows 0 - 24 (929 total, Query took 0.0088 seconds.)
+	2 no index
+	+ SQL: SELECT * from product_index WHERE cat_id = 15
+	  Showing rows 0 - 24 (929 total, Query took 0.0017 seconds.)
+	-----------------------------------------------
+	=> tốc độ truy vấn nhanh gấp 5,2 lần
+
+1. How Magento auto load class? Where is the auto loading implementation? Path finding and naming convention?
+- magento sử dụng Factory pattern phục vụ cho việc auto load class, 
+
+2.How to use magic method in Magneto? Where do Magento set/get data when c
+alling magic method? 
+- muốn dụng các magic method chúng ta cần gọi đến các phương thức đã được xây dựng sẵn nó được phẩn biệt ở dầu __ đứng đầu.
+- trong magento thì magic method được gọi từ vendor/magento/framework/DataObject.php
+
+3.Where will Magento store log detail when an exception happens? 
+log detail sẽ được lưu trong var/log/exception.log
+
+4. Difference between namespace and traditional include/require ? 
+- require/include giúp thực hiện inport một file thông qua đó có thể  sử dụng các thành phần trong đó như class, function,..
+- namespace giúp tạo ra không gian làm việc cho hàm và lớp, giúp tránh có sự xung đột về tên class
+
+5. How cookie and session work and transfer between server and client? 
+- session thì được lưu tại server, các session có id riêng của mình.
+- cookie được lưu ở client. max tối đa là 4kb, lần đầu sẽ request lên server và được trả về.
+
+6. List some AMD modules you see in Magento 2 
+7. What method can be used to debug in PHP? Where is PHP error log in your local setup? How many PHP error level?
+-method debug: die(), echo, var_dump();
+-file log in my local setup is /var/log/apache2/error.log
+8. What information/features do we have in JS debugger built in browsers? 
+- chúng ta có thể thấy dòng báo lỗi, loại lỗi, check lỗi theo từng điểm,
